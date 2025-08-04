@@ -1,44 +1,76 @@
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import BottomNavbar from "./NavBar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { ReactElement } from "react";
 import truck from "/truck.png";
-import packageImage from "/package.jpg"; // Add your other images
-import deliveryBike from "/delivery-bike.jpg"; // Add your other images
-import tracking from "/tracking.jpg"; // Add your other images
+import tracking from "/tracking.jpg"; 
+import TopNav from "./components/topNav";
+import ZoomOnScroll from "./components/ZoomScroll";
+
 
 function Welcome(): ReactElement {
   const { scrollYProgress } = useScroll();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const sectionRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = () => {
+    sectionRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
   
   // Scroll-based animations
+  const [keyCycle, setKeyCycle] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setKeyCycle(prev => prev + 1); // trigger re-mount
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+    // Scroll transforms
   const titleY = useTransform(scrollYProgress, [0, 0.5], [0, -100]);
   const subtitleY = useTransform(scrollYProgress, [0, 0.5], [0, -80]);
   const imageScale = useTransform(scrollYProgress, [0, 0.5], [1, 1.1]);
   const opacity = useTransform(scrollYProgress, [0, 0.3], [1, 0.8]);
 
-  
-
   // Image rotation angles (each rotated 3 degrees from previous)
-  const rotationAngles = [0, 4, -6, 6];
+  const rotationAngles = [6, 6, -6, 6];
   
   // Images array
   const images = [
     { src: truck, alt: "Delivery truck" },
-    { src: packageImage, alt: "Package" },
-    { src: deliveryBike, alt: "Delivery bike" },
-    { src: tracking, alt: "Tracking system" }
+    { src: tracking, alt: "Tracking system" },
   ];
 
   // Auto-rotate images every 3 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % images.length);
-    }, 6000);
+    }, 4000);
     return () => clearInterval(interval);
   }, [images.length]);
 
-  // Text animation variants
+const item = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: { type: "spring", stiffness: 100 }
+  }
+} as const;
+
+  const text = "RoadDrop";
+  const letters = text.split("");
+
+  const letterAnimation = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5 }
+    }
+  } as const;
+
   const container = {
     hidden: { opacity: 0 },
     visible: {
@@ -50,31 +82,12 @@ function Welcome(): ReactElement {
     }
   };
 
-const item = {
-  hidden: { y: 20, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: { type: "spring", stiffness: 100 }
-  }
-} as const;
-
-const letterAnimation = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5 }
-  }
-} as const;
-
-
-  // Split text into letters for animation
-  const text = "RoadDrop";
-  const letters = text.split("");
-
   return (
-    <div className="relative w-full h-screen overflow-hidden">
+    
+    <div className="relative w-full h-screen overflow-hidden overflow-y-auto snap-y snap-mandatory">
+      
+      <div className="snap-start">
+        <ZoomOnScroll>
       {/* Background image with parallax effect */}
       <motion.div
         className="absolute inset-0 bg-cover bg-center"
@@ -87,10 +100,10 @@ const letterAnimation = {
       
       {/* Color overlay */}
       <motion.div 
-        className="absolute inset-0 bg-gradient-to-r from-white to-slate-500/80 opacity-80"
+        className="absolute inset-0 bg-gradient-to-r backdrop-blur-sm from-white to-white "
         style={{ opacity }}
       />
-      
+       <TopNav />
       {/* Content */}
       <div className="relative z-10 h-full">
         <div className="p-10 flex justify-evenly items-center h-full">
@@ -101,22 +114,24 @@ const letterAnimation = {
             variants={container}
           >
             {/* Animated title with letter-by-letter animation */}
-            <motion.h1 
-              className="text-[80px] font-sans mb-4 flex"
-              style={{ y: titleY }}
-            >
-              {letters.map((letter, index) => (
-                <motion.span
-                  key={index}
-                  variants={letterAnimation}
-                  className={letter === "D" ? "text-blue-600" : "text-orange-500"}
-                  whileHover={{ scale: 1.2, y: -10 }}
-                  transition={{ type: "spring", stiffness: 400 }}
-                >
-                  {letter}
-                </motion.span>
-              ))}
-            </motion.h1>
+    <motion.h1
+      key={keyCycle} // 🟢 This makes the animation re-run
+      className="text-[80px] font-sans mb-4 flex"
+      initial="hidden"
+      animate="visible"
+      variants={container}
+      style={{ y: titleY }}
+    >
+      {letters.map((letter, index) => (
+        <motion.span
+          key={index}
+          variants={letterAnimation}
+          className={letter === "D" ? "text-slate-200 font-semibold" : "text-orange-500"}
+        >
+          {letter}
+        </motion.span>
+      ))}
+    </motion.h1>
             
             {/* Animated subtitle */}
             <motion.p 
@@ -125,39 +140,39 @@ const letterAnimation = {
               variants={item}
             >
            <motion.span 
-                className="inline-block"
+                className="inline-block text-blue-600"
                 whileHover={{ scale: 1.05, color: "#ea580c" }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
-                Send,
+                Send. 
               </motion.span>{" "}
               <motion.span 
-                className="inline-block"
+                className="inline-block text-blue-600"
                 whileHover={{ scale: 1.05, color: "#ea580c" }}
                 transition={{ type: "spring", stiffness: 300, delay: 0.1 }}
               >
-                Track
+                Track. Get Notified.
               </motion.span>{" "}
               <motion.span 
-                className="inline-block"
+                className="inline-block text-blue-600"
                 whileHover={{ scale: 1.05, color: "#ea580c" }}
                 transition={{ type: "spring", stiffness: 300, delay: 0.2 }}
               >
-                and
+                Experience    
               </motion.span>{" "}
               <motion.span 
                 className="inline-block"
                 whileHover={{ scale: 1.05, color: "#ea580c" }}
                 transition={{ type: "spring", stiffness: 300, delay: 0.3 }}
               >
-                get
+                a faster, smarter way
               </motion.span>{" "}
               <motion.span 
                 className="inline-block"
                 whileHover={{ scale: 1.05, color: "#ea580c" }}
                 transition={{ type: "spring", stiffness: 300, delay: 0.4 }}
               >
-                notified
+                to send and receive packages
               </motion.span>{" "}
               <br />
               <motion.span 
@@ -165,43 +180,15 @@ const letterAnimation = {
                 whileHover={{ scale: 1.05, color: "#ea580c" }}
                 transition={{ type: "spring", stiffness: 300, delay: 0.5 }}
               >
-                on
+               with real-time tracking and
               </motion.span>{" "}
               <motion.span 
                 className="inline-block"
                 whileHover={{ scale: 1.05, color: "#ea580c" }}
                 transition={{ type: "spring", stiffness: 300, delay: 0.6 }}
               >
-                your
+                instant delivery updates.
               </motion.span>{" "}
-              <motion.span 
-                className="inline-block"
-                whileHover={{ scale: 1.05, color: "#ea580c" }}
-                transition={{ type: "spring", stiffness: 300, delay: 0.7 }}
-              >
-                packages
-              </motion.span>{" "}
-              <motion.span 
-                className="inline-block"
-                whileHover={{ scale: 1.05, color: "#ea580c" }}
-                transition={{ type: "spring", stiffness: 300, delay: 0.8 }}
-              >
-                sent
-              </motion.span>{" "}
-              <motion.span 
-                className="inline-block"
-                whileHover={{ scale: 1.05, color: "#ea580c" }}
-                transition={{ type: "spring", stiffness: 300, delay: 0.9 }}
-              >
-                on
-              </motion.span>{" "}
-              <motion.span 
-                className="inline-block"
-                whileHover={{ scale: 1.05, color: "#ea580c" }}
-                transition={{ type: "spring", stiffness: 300, delay: 1.0 }}
-              >
-                courier.
-              </motion.span>
             </motion.p>
           </motion.div>
           
@@ -257,8 +244,22 @@ const letterAnimation = {
           </motion.div>
         </div>
         
+        
+        
+        </div>
+        </ZoomOnScroll>
         <BottomNavbar />
       </div>
+      <ZoomOnScroll>
+      <div className="h-screen w-full flex items-center justify-center bg-slate-200 snap-start">
+        <h1 className="text-4xl font-bold text-white">Section 1</h1>
+      </div>
+      </ZoomOnScroll>
+      <ZoomOnScroll>
+      <div className="h-screen w-full flex items-center justify-center bg-orange-500 snap-start">
+        <h1 className="text-4xl font-bold text-white">Section 2</h1>
+      </div>
+      </ZoomOnScroll>
     </div>
   );
 }

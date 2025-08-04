@@ -33,7 +33,7 @@ const BottomNavbar = () => {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
           transition={{ type: "spring", damping: 20, stiffness: 200 }}
-          className="fixed bottom-8 left-1/2 transform -translate-x-1/2 sm:w-[950px] w-full rounded-lg p-2 backdrop-blur-md bg-white/40 shadow-lg z-50"
+          className="fixed bottom-8 left-1/2 transform -translate-x-1/2 sm:w-[950px] w-full rounded-lg p-2 backdrop-blur-sm bg-slate-100/40 shadow-lg z-50"
         >
           <div className="flex justify-evenly items-center">
             {/* Logo */}
@@ -46,7 +46,7 @@ const BottomNavbar = () => {
               </div>
             </motion.div>
             <div className="flex mt-1">
-                <p className="text-orange-500 font-sans mr-2 text-[15px]">Courier <span className="text-blue-700">/</span></p>
+                <p className="text-orange-600 font-sans mr-2 text-[15px]">Courier <span className="text-blue-700">/</span></p>
                 
                 <HiHome className="text-blue-700 w-5 h-5 " />
             </div>
@@ -68,7 +68,7 @@ const BottomNavbar = () => {
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                   href={`#${item.toLowerCase().replace(" ", "-")}`}
-                  className="text-blue-700 hover:text-orange-200 font-sans text-[14px] sm:text-[15px] px-2 py-1 rounded-md transition-colors"
+                  className="text-orange-600 hover:text-orange-200 font-sans text-[14px] sm:text-[15px] px-2 py-1 rounded-md transition-colors"
                 >
                   {item}
                 </motion.a>
